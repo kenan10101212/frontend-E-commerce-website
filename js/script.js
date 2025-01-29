@@ -1,5 +1,7 @@
 const restApiUrl = "http://localhost^:8080/api";
 
+export default restApiUrl;
+
 function fetchUserProfile() {
     const token = localStorage.getItem('token');
 
