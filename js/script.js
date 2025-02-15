@@ -1,117 +1,122 @@
-const restApiUrl = "http://localhost^:8080/api";
 
-export default restApiUrl;
+export const restApiUrl = "http://localhost:8080/api"; 
 
+
+// Функция для получения профиля пользователя
 function fetchUserProfile() {
-    const token = localStorage.getItem('token');
-
+    const token = localStorage.getItem('token'); // Получаем токен из localStorage
+  
     if (!token) {
-        showOutOfProfileMenu();
-        return;
+      showOutOfProfileMenu(); // Если токена нет, показать меню для незарегистрированного пользователя
+      return;
     }
     axios
-        .get(`${restApiUrl}/auth/profile`, {
-            headers: { Authorrization: `Bearer ${token}` },
-        })
-        .then((response) => {
-            handleProfileSuccess(response.data);
-        })
-        .catch((error) => {
-            handleProfileError(error);
-        })
+      .get(`${restApiUrl}/auth/profile`, {
+        headers: { Authorization: `Bearer ${token}` }, // Добавляем заголовок авторизации
+      })
+      .then((response) => {
+        handleProfileSuccess(response.data); // Обработка успешного ответа
+      })
+      .catch((error) => {
+        handleProfileError(error); // Обработка ошибок
+      });
+  }
 
-}
+  // Функция обработки успешного ответа
 function handleProfileSuccess(userData) {
     console.log('Профиль пользователя загружен:', userData);
-    showInProfileMenu(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
-}
+    showInProfileMenu(userData); // Отобразить профиль пользователя в меню
+    localStorage.setItem('user', JSON.stringify(userData)); // Сохранить данные пользователя
+  }
 
+  // Функция для отображения меню профиля
 function showInProfileMenu(data) {
     showHeader();
     showFooter();
     console.log(data)
     const profileMenu = document.querySelector(".profileMenu");
     profileMenu.innerHTML = `
-     <a href="/pages/cart/cart.html">
-                            <i class="bi bi-cart fs-3 mx-3"></i>
-                        </a>
-                        <a href="/pages/profile/profile.html">
-                            <i class="bi bi-person-circle fs-2"></i>
-                        </a>
-                        <span class="username">
-                        ${data.username}
-                        </span>
-                        <span class="logoutBtn btn btn-danger">
-                            Log out
-                        </span>
-    `;
+          <a href="/pages/cart/cart.html">
+              <i class="bi bi-cart3 fs-2 mx-3"></i>
+          </a>
+          <a href="/pages/profile/profile.html">
+              <i class="bi bi-person-circle fs-2"></i>
+          </a>
+          <span class="username">
+              ${data.username}
+          </span>
+          <span class="logoutBtn btn btn-danger">
+              Log out
+          </span>
+      `;
     const logoutBtn = document.querySelector(".logoutBtn");
-    logoutBtn.addEventListener("click",logoutUser)
-}
+    logoutBtn.addEventListener("click", logoutUser)
+  }
+  
+  // Функция обработки ошибок
 function handleProfileError(error) {
-    if(error.response) {
-        const { status, data} = error.response;
-
-        if(status === 401) {
-            console.warm('Неавторизован: Токен истек или не действителен');
-            alert('Сессия истекла.Пожалуйста войдите снова.');
-            localStorage.removeItem('token');
-            showOutOfProfileMenu();
-        } else{
-            console.error(`Ошибка сервера(${status}):`,data);
-            alert('Произошла ошибка на сервере.Пожалуйста,попробуйте позже.');
-        }
+    if (error.response) {
+      const { status, data } = error.response;
+  
+      if (status === 401) {
+        console.warn('Неавторизован: Токен истек или недействителен');
+        alert('Сессия истекла. Пожалуйста, войдите снова.');
+        localStorage.removeItem('token'); // Удалить недействительный токен
+        showOutOfProfileMenu(); // Показать меню для незарегистрированного пользователя
+      } else {
+        console.error(`Ошибка сервера (${status}):`, data);
+        alert('Произошла ошибка на сервере. Пожалуйста, попробуйте позже.');
+      }
     } else {
-        console.error('Сетевая ошибка:',error.message);
-        alert('Проблема с сетью.Проверьте ваше подключение к интернету.');
+      console.error('Сетевая ошибка:', error.message);
+      alert('Проблема с сетью. Проверьте ваше подключение к интернету.');
     }
-}
-
-function logoutUser() {
-    const token = localStorage.getItem('token');
-    if(token) {
-        axios
-        .post('http://localhost:8080/api/auth/logout',null, {
-            headers: {Authorization: `Bearer ${token}`},
+  }
+  
+  function logoutUser() {
+    const token = localStorage.getItem('token'); // Получаем токен из localStorage
+    if (token) {
+      axios
+        .post('http://localhost:8080/api/auth/logout', null, {
+          headers: { Authorization: `Bearer ${token}` },
         })
         .then(() => {
-            console.log('Logout successfull');
-            localStorage.removeItem('token');
-            window.location.href = "/index.html";
+          console.log('Logout successful!');
+          localStorage.removeItem('token'); // Удаляем токен
+          window.location.href = '/index.html'; // Перенаправляем на страницу входа
         })
         .catch(error => {
-            console.log('Ошибка при выходе', error.response ? error.response.data : error.message);
-        })
+          console.error('Ошибка при выходе:', error.response ? error.response.data : error.message);
+        });
     } else {
-        console.log('No token found,user might already be logged out');
+      console.log('No token found, user might already be logged out');
     }
-}
+  }
 
-
+  // Функция для отображения меню для незарегистрированных пользователей
 function showOutOfProfileMenu() {
     showHeader();
     showFooter();
     const profileMenu = document.querySelector(".profileMenu");
     profileMenu.innerHTML = `
-    <a class="nav-link bg-danger text-light p-2 rounded " href="/pages/login/login.html">
-                        Log in
-                    </a>
-    `
-}
+          <a class="nav-link" href="/pages/login/login.html">
+              Log in
+          </a>
+      `;
+  }
 
-function showHeader() {
-    const header = document.createElement("header");
+  function showHeader(){
+    const header = document.createElement("header");  // Создаем элемент <header>
     header.innerHTML = `
-     <header>
+    <header>
         <div class="bg-black text-light">
             <p class="text-center p-3">
-                Summer Sale For All Swim Suits And Free Express Delivery - OFF 50%! <a
-                    href="/pages/shop/shop.html">ShopNow</a>
+                Summer Sale For All Swim Suits And Free Express Delivery - OFF 50%! <a href="/pages/shop/shop.html">Shop
+                    now</a>
             </p>
         </div>
         <nav class="navbar navbar-expand-lg  ">
-            <div class="container-fluid container">
+            <div class="container">
                 <a class="navbar-brand" href="/index.html">
                     E-commerce
                 </a>
@@ -146,123 +151,128 @@ function showHeader() {
                     <form class="d-flex align-items-center" role="search">
                         <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
                         <i class="bi bi-search fs-3"></i>
+
                     </form>
+
                     <!-- <div class="profileMenu mx-3 d-flex align-items-center gap-2">
                         <a href="/pages/cart/cart.html">
-                            <i class="bi bi-cart fs-3 mx-3"></i>
+                            <i class="bi bi-cart3 fs-3 mx-3"></i>
                         </a>
                         <a href="/pages/profile/profile.html">
                             <i class="bi bi-person-circle fs-2"></i>
                         </a>
-                        <span class="username">Tural</span>
+                        <span class="username">Tural
+                        </span>
                         <button class="logoutBtn btn btn-danger">
                             Log out
                         </button>
                     </div> -->
                     <div class="profileMenu mx-3 d-flex align-items-center gap-2">
-
-
-
-                        <a class="nav-link bg-danger text-light p-2 rounded " href="/pages/login/login.html">
+                        <a class="nav-link bg-danger text-light p-2 rounded" href="/pages/login/login.html">
                             Log in
                         </a>
                     </div>
+
+
                 </div>
             </div>
         </nav>
+
     </header>
     `
-    document.body.insertBefore(header, document.body.firstChild);
-}
+    document.body.insertBefore(header, document.body.firstChild);  // Вставляем <header> в начало <body>
+  }
 
-function showFooter() {
-    const footer = document.querySelector("footer");
+  function showFooter() {
+    const footer = document.createElement("footer");  // Создаем элемент <footer>
     footer.innerHTML = `
-        <footer class="bg-black p-5 text-light mt-5">
-        <div class="row">
-            <div class="col">
-                <h4 class="mb-3">
-                    Exclusive
-                </h4>
-                <p>
-                    Subscribe
-                </p>
-                <p>
-                    Get 10% off your first order
-                </p>
-                <input class="p-2 bg-transparent border border-light" type="text" placeholder="Enter tour email">
-            </div>
-            <div class="col">
-                <h4 class="mb-3">
-                    Support
-                </h4>
-                <p>
-                    111 Bijoy sarani, Dhaka, DH 1515,Bangladesh
-                </p>
-                <p>
-                    exclusive@gmail.com
-                </p>
-                <p>
-                    +88015-88888-9999
-                </p>
-            </div>
-            <div class="col">
-                <h4 class="mb-3">
-                    Account
-                </h4>
-                <p>
-                    My account
-                </p>
-                <p>
-                    Login / register
-                </p>
-                <p>
-                    Cart
-                </p>
-                <p>
-                    Shop
-                </p>
-            </div>
-            <div class="col">
-                <h4 class="mb-3">
-                    Quick link
-                </h4>
-                <p>
-                    Privacy Policy
-                </p>
-                <p>
-                    Terms of Use
-                </p>
-                <p>
-                    FAQ
-                </p>
-                <p>
-                    Content
-                </p>
-            </div>
-            <div class="col">
-                <h4 class="mb-3">
-                    Download App
-                </h4>
-                <p>
-                    <small class="text-secondary">
-                        Save $3 with App New User Only
-                    </small>
-                </p>
-                <div>
-                    <img src="/images/footer/qr.png" alt="">
-                </div>
-            </div>
-
-        </div>
-        <div class="mt-5">
-            <p class="text-secondary text-center">
-                Copyright Rimal 2022,All right reserved
-            </p>
-        </div>
-    </footer>
-    `;
-    document.body.appendChild(footer);
-}
-console.log("script.js")
-fetchUserProfile();
+      <footer class="bg-black p-5 text-light mt-5">
+          <div class="row">
+              <div class="col">
+                  <h4 class="mb-3">
+                      Exclusive
+                  </h4>
+                  <p>
+                      Subscribe
+                  </p>
+                  <p>
+                      Get 10% off your first order
+                  </p>
+                  <input class=" p-2 bg-transparent border border-light " type="text" placeholder=" Enter your email">
+              </div>
+              <div class="col">
+                  <h4 class="mb-3">
+                      Support
+                  </h4>
+                  <p>
+                      111 Bijoy sarani, Dhaka, DH 1515, Bangladesh.
+                  </p>
+                  <p>
+                      exclusive@gmail.com
+                  </p>
+                  <p>
+                      +88015-88888-9999
+                  </p>
+              </div>
+              <div class="col">
+                  <h4 class="mb-3">
+                      Account </h4>
+                  <p>
+                      My Account
+                  </p>
+                  <p>
+                      Login / Register
+                  </p>
+                  <p>
+                      Cart
+                  </p>
+                  <p>
+                      Shop
+                  </p>
+              </div>
+              <div class="col">
+                  <h4 class="mb-3">
+                      Quick Link </h4>
+                  <p>
+                      Privacy Policy
+                  </p>
+                  <p>
+                      Terms Of Use
+                  </p>
+                  <p>
+                      FAQ
+                  </p>
+                  <p>
+                      Contact
+                  </p>
+              </div>
+              <div class="col">
+                  <h4 class="mb-3">
+                      Download App
+                  </h4>
+                  <p>
+                      <small class="text-secondary">
+                          Save $3 with App New User Only
+                      </small>
+                  </p>
+                  <div>
+                      <img src="/images/footer/qr.png" alt="">
+                  </div>
+              </div>
+  
+  
+          </div>
+          <div class="mt-5">
+              <p class="text-secondary text-center">
+                  Copyright Rimel 2022. All right reserved
+              </p>
+          </div>
+      </footer>
+      `;  // Устанавливаем содержимое для <footer>
+    document.body.appendChild(footer);  // Добавляем <footer> в конец <body>
+  }
+  
+  
+  console.log("script.js")
+  fetchUserProfile();
+  

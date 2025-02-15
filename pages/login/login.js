@@ -1,4 +1,4 @@
-import restApiUrl from"../../js/script.js"
+import {restApiUrl} from"../../js/script.js"
 // Example starter JavaScript for disabling form submissions if there are invalid fields
 (() => {
     'use strict'
